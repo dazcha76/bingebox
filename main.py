@@ -1,4 +1,18 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
+from typing import List
+from datetime import date
+
+class Show(BaseModel):
+  name: str
+  image: str | None = None
+  genre: str | None = None
+  type: str | None = None
+  seasons: int | None = None
+  episodes: int | None = None
+  actors: List[str] | None = None
+  first_aired: date | None = None
+  last_aired: date | None = None
 
 shows = {
   1: {
@@ -10,7 +24,7 @@ shows = {
     "episodes": 892,
     "actors": ["Jodie Whittaker", "David Tennant", "Matt Smith"],
     "first_aired": "1963-11-23",
-    "last_aired": "",
+    "last_aired": None,
   },
   2: {
      "name": "Star Trek: The Next Generation",
@@ -23,94 +37,6 @@ shows = {
      "first_aired": "1987-09-28",
      "last_aired": "1994-05-23",
   },
-  3: {
-    "name": "",
-    "image": "",
-    "genre": "",
-    "type": "",
-    "seasons": 1,
-    "episodes": 1,
-    "actors": [],
-    "first_aired": "",
-    "last_aired": "",
-  },
-  4: {
-    "name": "",
-    "image": "",
-    "genre": "",
-    "type": "",
-    "seasons": 2,
-    "episodes": 2,
-    "actors": [],
-    "first_aired": "",
-    "last_aired": "",
-  },
-  5: {
-    "name": "",
-    "image": "",
-    "genre": "",
-    "type": "",
-    "seasons": 3,
-    "episodes": 3,
-    "actors": [],
-    "first_aired": "",
-    "last_aired": "",
-  },
-  6: {
-    "name": "",
-    "image": "",
-    "genre": "",
-    "type": "",
-    "seasons": 4,
-    "episodes": 4,
-    "actors": [],
-    "first_aired": "",
-    "last_aired": "",
-  },
-  7: {
-    "name": "",
-    "image": "",
-    "genre": "",
-    "type": "",
-    "seasons": 5,
-    "episodes": 5,
-    "actors": [],
-    "first_aired": "",
-    "last_aired": "",
-  },
-  8: {
-    "name": "",
-    "image": "",
-    "genre": "",
-    "type": "",
-    "seasons": 6,
-    "episodes": 6,
-    "actors": [],
-    "first_aired": "",
-    "last_aired": "",
-  },
-  9: {
-    "name": "",
-    "image": "",
-    "genre": "",
-    "type": "",
-    "seasons": 7,
-    "episodes": 7,
-    "actors": [],
-    "first_aired": "",
-    "last_aired": "",
-  },
-  10: {
-    "name": "",
-    "image": "",
-    "genre": "",
-    "type": "",
-    "seasons": 8,
-    "episodes": 8,
-    "actors": [],
-    "first_aired": "",
-    "last_aired": "",
-  }
 }
 
 app = FastAPI()
@@ -124,3 +50,9 @@ def get_shows(page: int = 1, limit: int = 10):
 @app.get("/shows/{show_id}")
 def get_show(show_id: int):
   return shows.get(show_id)
+
+@app.post("/shows")
+def add_show(show: Show):
+    new_id = max(shows.keys(), default=0) + 1
+    shows[new_id] = show.model_dump()
+    return show
