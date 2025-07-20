@@ -2,50 +2,39 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
 from datetime import date
+from data import shows
+from enums import ShowFormat, ShowGenre
 
 class Show(BaseModel):
   name: str
   image: str | None = None
-  genre: str | None = None
-  type: str | None = None
+  genre: ShowGenre = None
+  format: ShowFormat = None
   seasons: int | None = None
   episodes: int | None = None
   actors: List[str] | None = None
   first_aired: date | None = None
   last_aired: date | None = None
 
-shows = {
-  1: {
-    "name": "Doctor Who",
-    "image": "https://example.com/doctor-who.jpg",
-    "genre": "Science Fiction",
-    "type": "Series",
-    "seasons": 41,
-    "episodes": 892,
-    "actors": ["Jodie Whittaker", "David Tennant", "Matt Smith"],
-    "first_aired": "1963-11-23",
-    "last_aired": None,
-  },
-  2: {
-     "name": "Star Trek: The Next Generation",
-     "image": "https://example.com/star-trek.jpg",
-     "genre": "Science Fiction",
-     "type": "Series",
-     "seasons": 7,
-     "episodes": 178,
-     "actors": ["Patrick Stewart", "Jonathan Frakes", "Brent Spiner"],
-     "first_aired": "1987-09-28",
-     "last_aired": "1994-05-23",
-  },
-}
-
 app = FastAPI()
 
 @app.get("/shows")
-def get_shows(page: int = 1, limit: int = 10):
+def get_shows(
+  page: int = 1,
+  limit: int = 10,
+  genre: ShowGenre = None,
+  format: ShowFormat = None
+):
   skip = (page - 1) * limit
-  shows_list = list(shows.values()) 
-  return shows_list[skip: skip + limit]
+  show_list = list(shows.values()) 
+
+  if genre:
+    show_list = list(filter(lambda show: show["genre"] == genre.value, show_list))
+  
+  if format:
+    show_list = list(filter(lambda show: show["format"] == format.value, show_list))
+  
+  return show_list[skip: skip + limit]
 
 @app.get("/shows/{show_id}")
 def get_show(show_id: int):
