@@ -38,7 +38,7 @@ class ShowBase(BaseModel):
   }
 
 class EpisodeBase(BaseModel):
-  number: int | None = None
+  ep_number: int | None = None
   title: str
   air_date: date | None = None
 

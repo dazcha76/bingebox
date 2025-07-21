@@ -1,11 +1,10 @@
 from typing_extensions import Annotated
 from fastapi import Depends, FastAPI, HTTPException
 from enums import ShowFormat, ShowGenre
-import models
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session
-
 from schemas import ShowBase
+import models
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
@@ -18,6 +17,8 @@ def get_db():
     db.close()
 
 db_dependency = Annotated[Session, Depends(get_db)]
+
+# ---------- Shows ---------- #
 
 @app.get("/shows")
 def get_shows(
@@ -56,7 +57,7 @@ async def toggle_favorites(show_id: int, db: db_dependency):
   db_show.favorite = not db_show.favorite
   db.commit()
   db.refresh(db_show)
-  return {"show": db_show.name, "favorite": db_show.favorite}
+  return {"id": db_show.id, "show": db_show.name, "favorite": db_show.favorite}
 
 @app.post("/shows")
 async def add_show(show: ShowBase, db: db_dependency):
@@ -74,3 +75,22 @@ async def add_show(show: ShowBase, db: db_dependency):
     return new_show
   except Exception as e:
     raise HTTPException(status_code=500, detail=str(e))
+
+# ---------- Episodes ---------- #
+
+@app.get("/shows/{show_id}/episodes")
+async def get_episodes(show_id: int, db: db_dependency):
+  show = db.query(models.Show).filter(models.Show.id == show_id).first()
+  episodes = db.query(models.Episode).filter(models.Episode.show_id == show_id).all()
+  if not episodes:
+    raise HTTPException(status_code=404, detail="No episodes found for this show")
+  return {"id": show.id, show.name: episodes}
+
+# ---------- Actors ---------- #
+
+@app.get("/shows/{show_id}/actors")
+def get_actors_by_show(show_id, db: db_dependency):
+  show = db.query(models.Show).filter(models.Show.id == show_id).first()
+  if not show:
+    return None
+  return {"id": show.id, show.name: show.actors}

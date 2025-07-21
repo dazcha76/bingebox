@@ -8,7 +8,7 @@ import random
 fake = Faker()
 db = SessionLocal()
 
-# ------ Seed tv shows ------ #
+# ------ Seed Tv Shows ------ #
 
 for name in real_tv_shows:
   show = models.Show(
@@ -20,7 +20,7 @@ for name in real_tv_shows:
   )
   db.add(show)
 
-# ------ Seed actors ------ #
+# ------ Seed Actors ------ #
 
 for actor_data in real_actors:
   actor = models.Actor(
@@ -29,18 +29,28 @@ for actor_data in real_actors:
   )
   db.add(actor)
 
-# ------ Seed episodes ------ #
+# ------ Seed Show_Actors ------ #
+
+shows = db.query(models.Show).all()
+actors = db.query(models.Actor).all()
+
+for show in shows:
+  assigned_actors = random.sample(actors, k=random.randint(1, min(3, len(actors))))
+  for actor in assigned_actors:
+    show.actors.append(actor)
+
+# ------ Seed Episodes ------ #
 
 shows = db.query(models.Show).all()
 
-for _ in range(len(shows)):
+for _ in range(20):
   show = random.choice(shows)
   episode_number = random.randint(1, 10)
   title = fake.sentence(nb_words=5)
   air_date = fake.date_this_decade()
 
   episode = models.Episode(
-    number=episode_number,
+    ep_number=episode_number,
     title=title,
     air_date=air_date,
     show_id=show.id
