@@ -17,6 +17,34 @@ class ShowBase(BaseModel):
   format: ShowFormat | None = None
   favorite: bool = False
 
+  model_config = {
+    "json_schema_extra": {
+      "examples": [
+        {
+          "available genre values": [
+            "Action",
+            "Adventure",
+            "Animation",
+            "Comedy",
+            "Crime",
+            "Drama",
+            "Fantasy",
+            "Mystery",
+            "Romance",
+            "Sci-Fi"
+          ],
+          "available format values": [
+            "Game Show",
+            "Mini-series",
+            "Reality Show",
+            "Series",
+            "Talk Show"
+          ]
+        }
+      ]
+    }
+  }
+
 class EpisodeBase(BaseModel):
   number: int | None = None
   title: str
@@ -76,4 +104,4 @@ async def add_show(show: ShowBase, db: db_dependency):
     db.refresh(new_show)
     return new_show
   except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    raise HTTPException(status_code=500, detail=str(e))
