@@ -1,58 +1,14 @@
-from datetime import date
 from typing_extensions import Annotated
 from fastapi import Depends, FastAPI, HTTPException
-from pydantic import BaseModel
 from enums import ShowFormat, ShowGenre
 import models
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session
 
+from schemas import ShowBase
+
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
-
-class ShowBase(BaseModel):
-  name: str
-  image: str | None = None
-  genre: ShowGenre | None = None
-  format: ShowFormat | None = None
-  favorite: bool = False
-
-  model_config = {
-    "json_schema_extra": {
-      "examples": [
-        {
-          "available genre values": [
-            "Action",
-            "Adventure",
-            "Animation",
-            "Comedy",
-            "Crime",
-            "Drama",
-            "Fantasy",
-            "Mystery",
-            "Romance",
-            "Sci-Fi"
-          ],
-          "available format values": [
-            "Game Show",
-            "Mini-series",
-            "Reality Show",
-            "Series",
-            "Talk Show"
-          ]
-        }
-      ]
-    }
-  }
-
-class EpisodeBase(BaseModel):
-  number: int | None = None
-  title: str
-  air_date: date | None = None
-
-class ActorBase(BaseModel):
-  first_name: str
-  last_name: str
 
 def get_db():
   db = SessionLocal()
