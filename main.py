@@ -94,3 +94,11 @@ def get_actors_by_show(show_id, db: db_dependency):
   if not show:
     return None
   return {"id": show.id, show.name: show.actors}
+
+@app.get("/shows/{actor_id}/shows")
+def get_shows_by_actor(actor_id, db: db_dependency):
+  actor = db.query(models.Actor).filter(models.Actor.id == actor_id).first()
+  if not actor:
+    return None
+  actor_name = actor.first_name + ' ' + actor.last_name
+  return {"id": actor.id, actor_name: actor.shows}
