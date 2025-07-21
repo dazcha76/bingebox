@@ -68,6 +68,7 @@ def get_shows(
   db: db_dependency,
   page: int = 1,
   limit: int = 10,
+  favorite: bool | None = None,
   genre: ShowGenre | None = None,
   format: ShowFormat | None = None
 ):
@@ -75,19 +76,31 @@ def get_shows(
   query = db.query(models.Show)
 
   if genre:
-      query = query.filter(models.Show.genre == genre)
+    query = query.filter(models.Show.genre == genre)
   if format:
-      query = query.filter(models.Show.format == format)
+    query = query.filter(models.Show.format == format)
+  if favorite is not None:
+    query = query.filter(models.Show.favorite == favorite)
 
   shows = query.offset(skip).limit(limit).all()
   return shows
 
 @app.get("/shows/{show_id}")
 async def get_show(show_id: int, db: db_dependency):
-  result = db.query(models.Show).filter(models.Show.id == show_id).first()
-  if not result:
+  show = db.query(models.Show).filter(models.Show.id == show_id).first()
+  if not show:
     raise HTTPException(status_code=404, detail="Show is not found")
-  return result
+  return show
+
+@app.patch("/shows/{show_id}")
+async def toggle_favorites(show_id: int, db: db_dependency):
+  db_show = db.query(models.Show).filter(models.Show.id == show_id).first()
+  if not db_show:
+    raise HTTPException(status_code=404, detail="Show not found")
+  db_show.favorite = not db_show.favorite
+  db.commit()
+  db.refresh(db_show)
+  return {"show": db_show.name, "favorite": db_show.favorite}
 
 @app.post("/shows")
 async def add_show(show: ShowBase, db: db_dependency):
