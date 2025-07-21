@@ -19,6 +19,7 @@ for name in real_tv_shows:
     favorite=fake.boolean(),
   )
   db.add(show)
+  db.commit()
 
 # ------ Seed Actors ------ #
 
@@ -28,6 +29,7 @@ for actor_data in real_actors:
     last_name=actor_data["last_name"]
   )
   db.add(actor)
+  db.commit()
 
 # ------ Seed Show_Actors ------ #
 
@@ -56,6 +58,6 @@ for _ in range(20):
     show_id=show.id
   )
   db.add(episode)
-
-db.commit()
+  db.commit()
+  
 db.close()
