@@ -1,20 +1,7 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
-from typing import List
-from datetime import date
 from data import shows
 from enums import ShowFormat, ShowGenre
-
-class Show(BaseModel):
-  name: str
-  image: str | None = None
-  genre: ShowGenre = None
-  format: ShowFormat = None
-  seasons: int | None = None
-  episodes: int | None = None
-  actors: List[str] | None = None
-  first_aired: date | None = None
-  last_aired: date | None = None
+from models import ShowBase
 
 app = FastAPI()
 
@@ -41,7 +28,7 @@ def get_show(show_id: int):
   return shows.get(show_id)
 
 @app.post("/shows")
-def add_show(show: Show):
-    new_id = max(shows.keys(), default=0) + 1
-    shows[new_id] = show.model_dump()
-    return show
+def add_show(show: ShowBase):
+  new_id = max(shows.keys(), default=0) + 1
+  shows[new_id] = show.model_dump()
+  return show
