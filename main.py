@@ -1,10 +1,15 @@
 from datetime import date
-from fastapi import FastAPI
+from typing_extensions import Annotated
+from fastapi import Depends, FastAPI
 from pydantic import BaseModel
 from data import shows
 from enums import ShowFormat, ShowGenre
+import models
+from database import engine, SessionLocal
+from sqlalchemy.orm import Session
 
 app = FastAPI()
+models.Base.metadata.create_all(bind=engine)
 
 class ShowBase(BaseModel):
   name: str
@@ -21,6 +26,15 @@ class EpisodeBase(BaseModel):
 class ActorBase(BaseModel):
   first_name: str
   last_name: str
+
+def get_db():
+  db = SessionLocal()
+  try:
+    yield db
+  finally:
+    db.close()
+
+db_dependency = Annotated[Session, Depends(get_db)]
 
 @app.get("/shows")
 def get_shows(
@@ -45,7 +59,14 @@ def get_show(show_id: int):
   return shows.get(show_id)
 
 @app.post("/shows")
-def add_show(show: ShowBase):
-  new_id = max(shows.keys(), default=0) + 1
-  shows[new_id] = show.model_dump()
-  return show
+async def add_show(show: ShowBase, db: db_dependency):
+  db_show = models.Show(
+    name=show.name,
+    image=show.image,
+    genre=show.genre.value if show.genre else None,
+    format=show.format.value if show.format else None,
+    favorite=show.favorite
+  )
+  db.add(db_show)
+  db.commit()
+  db.refresh(db_show)

@@ -1,5 +1,5 @@
-from enum import Enum
 from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String
+from sqlalchemy.types import Enum as SqlEnum
 from database import Base
 from enums import ShowFormat, ShowGenre
 
@@ -8,8 +8,8 @@ class Show(Base):
   id = Column(Integer, primary_key=True, index=True)
   name = Column(String, nullable=False)
   image = Column(String, nullable=True)
-  genre = Column(Enum(ShowGenre), nullable=True)
-  format = Column(Enum(ShowFormat), nullable=True)
+  genre = Column(SqlEnum(ShowGenre), nullable=True)
+  format = Column(SqlEnum(ShowFormat), nullable=True)
   favorite = Column(Boolean, nullable=False, default=False)
 
 class Episode(Base):
