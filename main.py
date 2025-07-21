@@ -55,8 +55,11 @@ def get_shows(
   return show_list[skip: skip + limit]
 
 @app.get("/shows/{show_id}")
-def get_show(show_id: int):
-  return shows.get(show_id)
+async def get_show(show_id: int, db: db_dependency):
+  result = db.query(models.Show).filter(models.Show.id == show_id).first()
+  if not result:
+    raise HTTPException(status_code=404, detail="Show is not found")
+  return result
 
 @app.post("/shows")
 async def add_show(show: ShowBase, db: db_dependency):
