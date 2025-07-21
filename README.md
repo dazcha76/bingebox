@@ -11,7 +11,7 @@ virtualenv or your preferred environment manager
 `cd your-repo-name`
 
 ### 📁 2. Create and Activate a Virtual Environment
-`python -m venv venv`  
+`python3 -m venv venv`  
 `source venv/bin/activate` # On Windows: venv\Scripts\activate
 
 ### 📚 3. Install Dependencies
@@ -39,7 +39,7 @@ Once the app runs for the first time, SQLAlchemy will create the tables automati
 You can stop the server once the tables are created.  
 
 ### 🌱 6. (Optional) Seed the Database with Fake Data
-`python seed.py`  
+`python3 seed.py`  
 
 This uses Faker to populate your shows table with dummy data.  
 
