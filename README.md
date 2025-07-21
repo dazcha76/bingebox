@@ -9,7 +9,7 @@ virtualenv or your preferred environment manager
 ### 📦 1. Clone the Repository
 HTTPS: `git clone https://github.com/your-username/your-repo-name.git`  
 SSH: `git@github.com:dazcha76/bingebox.git`  
-`cd your-repo-name`
+`cd bingebox`
 
 ### 📁 2. Create and Activate a Virtual Environment
 `python3 -m venv venv`  
