@@ -2,7 +2,6 @@ from datetime import date
 from typing_extensions import Annotated
 from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel
-from data import shows
 from enums import ShowFormat, ShowGenre
 import models
 from database import engine, SessionLocal
@@ -14,8 +13,8 @@ models.Base.metadata.create_all(bind=engine)
 class ShowBase(BaseModel):
   name: str
   image: str | None = None
-  genre: ShowGenre
-  format: ShowFormat
+  genre: ShowGenre | None = None
+  format: ShowFormat | None = None
   favorite: bool = False
 
 class EpisodeBase(BaseModel):
@@ -38,21 +37,22 @@ db_dependency = Annotated[Session, Depends(get_db)]
 
 @app.get("/shows")
 def get_shows(
+  db: db_dependency,
   page: int = 1,
   limit: int = 10,
-  genre: ShowGenre = None,
-  format: ShowFormat = None
+  genre: ShowGenre | None = None,
+  format: ShowFormat | None = None
 ):
   skip = (page - 1) * limit
-  show_list = list(shows.values()) 
+  query = db.query(models.Show)
 
   if genre:
-    show_list = list(filter(lambda show: show["genre"] == genre.value, show_list))
-  
+      query = query.filter(models.Show.genre == genre)
   if format:
-    show_list = list(filter(lambda show: show["format"] == format.value, show_list))
-  
-  return show_list[skip: skip + limit]
+      query = query.filter(models.Show.format == format)
+
+  shows = query.offset(skip).limit(limit).all()
+  return shows
 
 @app.get("/shows/{show_id}")
 async def get_show(show_id: int, db: db_dependency):
@@ -64,16 +64,16 @@ async def get_show(show_id: int, db: db_dependency):
 @app.post("/shows")
 async def add_show(show: ShowBase, db: db_dependency):
   try:
-    db_show = models.Show(
+    new_show = models.Show(
       name=show.name,
       image=show.image,
       genre=show.genre,
       format=show.format,
       favorite=show.favorite
     )
-    db.add(db_show)
+    db.add(new_show)
     db.commit()
-    db.refresh(db_show)
-    return db_show
+    db.refresh(new_show)
+    return new_show
   except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
