@@ -1,6 +1,6 @@
 from datetime import date
 from typing_extensions import Annotated
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel
 from data import shows
 from enums import ShowFormat, ShowGenre
@@ -14,8 +14,8 @@ models.Base.metadata.create_all(bind=engine)
 class ShowBase(BaseModel):
   name: str
   image: str | None = None
-  genre: ShowGenre | None = None
-  format: ShowFormat | None = None
+  genre: ShowGenre
+  format: ShowFormat
   favorite: bool = False
 
 class EpisodeBase(BaseModel):
@@ -60,13 +60,17 @@ def get_show(show_id: int):
 
 @app.post("/shows")
 async def add_show(show: ShowBase, db: db_dependency):
-  db_show = models.Show(
-    name=show.name,
-    image=show.image,
-    genre=show.genre.value if show.genre else None,
-    format=show.format.value if show.format else None,
-    favorite=show.favorite
-  )
-  db.add(db_show)
-  db.commit()
-  db.refresh(db_show)
+  try:
+    db_show = models.Show(
+      name=show.name,
+      image=show.image,
+      genre=show.genre,
+      format=show.format,
+      favorite=show.favorite
+    )
+    db.add(db_show)
+    db.commit()
+    db.refresh(db_show)
+    return db_show
+  except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

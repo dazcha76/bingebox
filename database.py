@@ -7,6 +7,6 @@ url=settings.POSTGRES_URL()
 
 engine = create_engine(url)
 
-SessionLocal = sessionmaker(autocmmit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
